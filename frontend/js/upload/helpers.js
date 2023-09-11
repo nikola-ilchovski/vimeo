@@ -83,7 +83,7 @@ export const createVideo = async () => {
   };
 };
 
-export const approach2 = async () => {
+export const upload = async () => {
   const { fileFirst, size, name, type, uploadLink } = await createVideo();
 
   const fileInput = document.querySelector("#vimeo_upload");

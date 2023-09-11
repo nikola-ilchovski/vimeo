@@ -1,11 +1,5 @@
 const tus = require("tus-js-client");
-const fs = require("fs");
-let Vimeo = require("vimeo").Vimeo;
-const client = new Vimeo(
-  process.env.VIMEO_CLIENT_ID,
-  process.env.VIMEO_CLIENT_SECRET,
-  process.env.VIMEO_ACCESS_TOKEN
-);
+
 const ACCESS_TOKEN = process.env.VIMEO_ACCESS_TOKEN;
 
 // Create Video
@@ -54,20 +48,12 @@ const uploadVideoChunkAsync = (stream, chunkSize, totalSize, uploadLink) => {
       uploadSize: totalSize,
       // retryDelays: [0, 1000, 3000, 5000],
       onError: function (error) {
-        console.log("stream error: ", error);
-        console.log("/STREAM <------ END ------->");
         reject(error);
       },
       onProgress(bytesUploaded, total) {
         console.log("onProgress: ", bytesUploaded, total);
       },
       onSuccess: async function (data) {
-        // console.log("data", data);
-        // console.log("Download %s from %s", upload.file.name, upload.url);
-        // console.log(upload);
-
-        console.log("stream success");
-        console.log("/STREAM <------ END ------->");
         resolve(data);
       },
     });
