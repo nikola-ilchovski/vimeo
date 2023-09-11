@@ -1,4 +1,5 @@
 const tus = require("tus-js-client");
+const crypto = require("crypto");
 
 const ACCESS_TOKEN = process.env.VIMEO_ACCESS_TOKEN;
 
@@ -38,6 +39,21 @@ const wait = (time) => {
   });
 };
 
+const getStatus = async (uploadLink) => {
+  const headers = new Headers();
+  headers.append("Tus-Resumable", "1.0.0");
+  headers.append("Accept", "application/vnd.vimeo.*+json;version=3.4");
+  headers.append("Authorization", `Bearer ${ACCESS_TOKEN}`);
+
+  const response = await fetch(uploadLink, {
+    method: "HEAD",
+    headers: headers,
+  });
+
+  return response;
+};
+
+// not used
 const uploadVideoChunkAsync = (stream, chunkSize, totalSize, uploadLink) => {
   return new Promise((resolve, reject) => {
     // const localFile = fs.createReadStream(`${__dirname}/../videos/demo.mp4`);
@@ -64,22 +80,22 @@ const uploadVideoChunkAsync = (stream, chunkSize, totalSize, uploadLink) => {
   });
 };
 
+// not used
 const uploadChunk = async (uploadLink, chunk) => {
   return await uploadVideoChunkAsync(uploadLink, chunk);
 };
 
-const getStatus = async (uploadLink) => {
-  const headers = new Headers();
-  headers.append("Tus-Resumable", "1.0.0");
-  headers.append("Accept", "application/vnd.vimeo.*+json;version=3.4");
-  headers.append("Authorization", `Bearer ${ACCESS_TOKEN}`);
+const generateFilePath = (folder, extention, fileName, skip_extension) => {
+  if (!fileName) {
+    let string = new Date().getMilliseconds().toString();
+    fileName = crypto.createHash("md5").update(string).digest("hex");
+  }
 
-  const response = await fetch(uploadLink, {
-    method: "HEAD",
-    headers: headers,
-  });
+  if (typeof skip_extension != "undefined" && skip_extension) {
+    return folder + "/" + fileName;
+  }
 
-  return response;
+  return folder + "/" + fileName + "." + extention;
 };
 
 module.exports = {
@@ -88,4 +104,5 @@ module.exports = {
   uploadChunk,
   uploadVideoChunkAsync,
   wait,
+  generateFilePath,
 };

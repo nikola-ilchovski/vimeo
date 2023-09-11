@@ -11,8 +11,6 @@ export const readFileAsBuffer = (file) =>
 
     reader.onprogress = function (e) {
       console.log("e", Math.ceil((e.loaded / e.total) * 100));
-      progressText.innerHTML =
-        "Reading file: " + Math.ceil((e.loaded / e.total) * 100) + " %";
     };
 
     reader.onerror = function (e) {
@@ -23,14 +21,10 @@ export const readFileAsBuffer = (file) =>
     reader.readAsArrayBuffer(file);
   });
 
-export const getfile = async () => {
-  const fileInput = document.querySelector("#vimeo_upload");
+export const getfile = async (fileInput) => {
   const file = fileInput.files[0];
-  console.log("file", file);
 
   const fileInfo = await readFileAsBuffer(file);
-  console.log("fileInfo", fileInfo);
-  // console.log('videoBinary', videoBinary);
 
   return {
     file: fileInfo,
@@ -53,13 +47,10 @@ export const checkVideoUploadStatus = async (uploadLink) => {
   console.log("status", result);
 };
 
-export const createVideo = async () => {
-  const { file, maxByteSize, name, size, type } = await getfile();
-  const uploadStatus = document.querySelector("#upload-status");
-  const uploadStatusText = document.querySelector("#upload-status-text");
-  console.log("file");
+export const createVideo = async (fileInput) => {
+  const { file, maxByteSize, name, size, type } = await getfile(fileInput);
+
   // create a video
-  // upload videoChunk
   const result = await fetch("https://localhost:8001/api/video/create", {
     method: "POST",
     headers: {
@@ -68,14 +59,9 @@ export const createVideo = async () => {
     body: JSON.stringify({ maxByteSize, name, size, type }),
   });
   const createVideoResponse = await result.json();
-
-  console.log("createVideoResponse", createVideoResponse);
-  uploadStatus.classList.remove("hidden");
-  uploadStatusText.innerHTML = createVideoResponse.response.status;
   const uploadLink = createVideoResponse.uploadLink;
 
   return {
-    fileFirst: file,
     size,
     name,
     type,
@@ -83,10 +69,9 @@ export const createVideo = async () => {
   };
 };
 
-export const upload = async () => {
-  const { fileFirst, size, name, type, uploadLink } = await createVideo();
+export const upload = async (endpoint, fileInput) => {
+  const { size, name, type, uploadLink } = await createVideo(fileInput);
 
-  const fileInput = document.querySelector("#vimeo_upload");
   const file = fileInput.files[0];
 
   if (!file) {
@@ -94,7 +79,6 @@ export const upload = async () => {
     return;
   }
 
-  // Todo: file.stream() ----> Might not be compatible with all browsers check this!!
   const readStream = file.stream();
   const stream = new ReadableStream({
     start(controller) {
@@ -120,16 +104,18 @@ export const upload = async () => {
   headers.append("Content-Type", "application/octet-stream");
   headers.append("upload-link", uploadLink);
   headers.append("upload-size", size);
-  console.log("??????");
-  console.log("body stream", stream);
+  headers.append("upload-name", name);
+  headers.append("upload-type", type);
 
   try {
-    const response = await fetch("https://localhost:8001/api/video/stream", {
+    console.log("make request");
+    const response = await fetch(endpoint, {
       method: "POST",
       body: stream,
       headers: headers,
       duplex: "half",
     });
+    console.log("end request");
 
     if (response.ok) {
       alert("Video uploaded successfully");

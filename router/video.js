@@ -1,7 +1,19 @@
 const axios = require("axios");
 const express = require("express");
 const router = express.Router();
-const { createVideo, getStatus, wait } = require("../services/video");
+require("dotenv").config();
+const {
+  createVideo,
+  getStatus,
+  wait,
+  generateFilePath,
+} = require("../services/video");
+
+// Imports the Google Cloud client library
+const { Storage } = require("@google-cloud/storage");
+
+// Import Node.js stream
+const stream = require("stream");
 
 // /api/video/create
 router.post("/create", async (req, res) => {
@@ -15,7 +27,7 @@ router.post("/create", async (req, res) => {
   }
 });
 
-router.post("/stream", async (req, res) => {
+router.post("/stream-vimeo", async (req, res) => {
   try {
     console.log("/STREAM");
     const uploadLink = req.headers["upload-link"]; // vimeo video upload destination url
@@ -103,6 +115,65 @@ router.post("/stream", async (req, res) => {
       });
   } catch (error) {
     console.log("error happened");
+  }
+});
+
+router.post("/stream-google", async (req, res) => {
+  console.log("/stream-google");
+  try {
+    console.log("/STREAM");
+    const uploadLink = req.headers["upload-link"]; // vimeo video upload destination url
+    const uploadSize = Number(req.headers["upload-size"]); // the size of the video that will be uploaded
+    const name = req.headers["upload-name"]; // the name of the video that will be uploaded
+    const type = req.headers["upload-type"]; // the type (mp4) of the video that will be uploaded
+
+    /**
+     * TODO(developer): Uncomment the following lines before running the sample
+     */
+    // The ID of your GCS bucket
+    const bucketName = "opus-edu-dev";
+
+    // The new ID for your GCS file
+    const destFileName = generateFilePath("videos", "", name, true);
+
+    // Creates a client
+    const storage = new Storage({
+      projectId: process.env.GOOGLE_STORAGE_PROJECT_ID,
+      scopes: "https://www.googleapis.com/auth/cloud-platform",
+      credentials: {
+        client_email: process.env.GOOGLE_STORAGE_EMAIL,
+        private_key: process.env.GOOGLE_STORAGE_PRIVATE_KEY.replace(
+          /\\n/g,
+          "\n"
+        ),
+      },
+    });
+
+    // Get a reference to the bucket
+    const myBucket = storage.bucket(bucketName);
+
+    // Create a reference to a file object
+    const file = myBucket.file(destFileName);
+
+    async function streamFileUpload() {
+      // console.log("typeResponse", typeResponse);
+      req.pipe(file.createWriteStream()).on("finish", async () => {
+        // The file upload is complete
+        console.log("file upload is complete?");
+        file.setMetadata({
+          contentType: type,
+        });
+        res.send(true);
+      });
+
+      console.log(`${destFileName} uploaded to ${bucketName}`);
+    }
+
+    streamFileUpload().catch((error) => {
+      console.log("error: ", error);
+    });
+  } catch (error) {
+    console.log("error happened", error);
   }
 });
 

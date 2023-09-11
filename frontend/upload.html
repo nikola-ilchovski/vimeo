@@ -11,12 +11,20 @@
   </style>
 </head>
 <body>
-  <h1>Upload</h1>
+  <h1>Upload (Flow Frontend -> Backend -> Vimeo)</h1>
 
   <input id="vimeo_upload" type="file" />
-  <p id="loaded-progress"></p>
   <button class="upload-btn">Upload</button>
   <p class="hidden" id="upload-status">Upload Status: <span id="upload-status-text"></span></p>
+
+  <h1>Upload (Flow Frontend -> Backend -> Google Cloud)</h1>
+
+  <input id="upload_google" type="file" />
+  <button class="upload-btn-google">Upload to Google Cloud</button>
+  <p class="hidden" id="upload-status">Upload Status: <span id="upload-status-text-google"></span></p>
+
+  <h1>Upload (Transfer video from Google Clould -> Backend -> Vimeo)</h1>
+  <button class="upload-btn">Transfer</button>
 
   <!-- <script src="./tus.min.js"></script> -->
   <script type="module" src="./js/upload/main.js"></script>
