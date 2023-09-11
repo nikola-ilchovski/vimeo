@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Approach 1</title>
+</head>
+<body>
+  <h1>Approach 1 - using existing player</h1>
+
+  <iframe 
+    src="https://player.vimeo.com/video/859296666?h={hash_parameter}" 
+    width="900" 
+    height="900" 
+    frameborder="0" 
+    webkitallowfullscreen 
+    mozallowfullscreen 
+    allowfullscreen
+  ></iframe>
+
+  <!-- or use npm install @vimeo/player -->
+  <script src="https://player.vimeo.com/api/player.js"></script>
+  <script>
+    // Your Vimeo SDK player script goes here
+    var iframe = document.querySelector('iframe');
+    var player = new Vimeo.Player(iframe);
+
+    // set the colors
+    // player.setColors(['#0fe', '#00adef', '#ffffff', '#000000'])
+
+    player.on('play', function() {
+      console.log('Played the video');
+    });
+
+    player.getVideoTitle().then(function(title) {
+      console.log('title:', title);
+    });
+
+    // Fires every time the video progress changes (programatically or manually)
+    player.on('timeupdate', function(data) {
+      console.log('timeupdate data', data);
+    });
+
+    // when you click on the track and change the progress of the video manually
+    player.on('seeked', function(data) {
+      console.log('seeked data', data);
+    });
+
+    // when you click on the track and change the progress of the video manually
+    player.on('ended', function(data) {
+      console.log('The video is watched successfully!', data);
+    });
+
+    player.on('play', function(data) {
+      console.log('The video is played!', data);
+    });
+
+    player.on('pause', function(data) {
+      console.log('The video is paused!', data);
+    });
+  </script>
+</body>
+</html>

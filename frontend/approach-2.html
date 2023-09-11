@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Approach 2</title>
+</head>
+<body>
+  <h1>Approach 2</h1>
+  <p>Creating a new player - Passing the video ID or URL to Vimeo.Player</p>
+
+  <!-- if you've set the video's privacy to Unlisted, you can't reference the video by ID. You must give the video's URL instead, and the URL must include the h parameter and its value, like this:
+  https://player.vimeo.com/video/76979871?h=8272103f6e
+  The h parameter is a security measure that ensures the privacy of the video. The value of this parameter is unique to the video. -->
+
+  <div id="{video01_name}"></div>
+  <div id="{video02_name}"></div>
+
+  <script src="https://player.vimeo.com/api/player.js"></script>
+  <script>
+    var options01 = {
+      id: 859296666,
+      width: 900
+    };
+    var options02 = {
+      url: 859296666,
+      width: 900
+    };
+
+    var video01Player = new Vimeo.Player('{video01_name}', options01);
+    var video02Player = new Vimeo.Player('{video02_name}', options02);
+
+    video01Player.setVolume(0);
+    video02Player.setVolume(0);
+
+    video01Player.on('play', function() {
+      console.log('Played the first video');
+    });
+    video02Player.on('play', function() {
+      console.log('Played the second video');
+    });
+  </script>
+</body>
+</html>

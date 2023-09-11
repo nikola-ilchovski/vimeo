@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Upload</h1>
+
+  <input id="vimeo_upload" type="file" />
+  <p id="loaded-progress"></p>
+  <button class="upload-btn">Upload</button>
+  <p class="hidden" id="upload-status">Upload Status: <span id="upload-status-text"></span></p>
+
+  <script src="./tus.min.js"></script>
+  <script type="module" src="./js/upload/main.js"></script>
+</body>
+</html>

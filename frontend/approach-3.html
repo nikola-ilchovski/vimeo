@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Approach 3</title>
+</head>
+<body>
+  <h1>Approach 3</h1>
+
+  <div data-vimeo-id="{video01_id}" data-vimeo-width="{video01_width}" id="{video01_name}"></div>
+  <div data-vimeo-url="{video02_url}" data-vimeo-width="{video02_width}" id="{video02_name}"></div>
+
+  <script src="https://player.vimeo.com/api/player.js"></script>
+  <script>
+    var video01Player = new Vimeo.Player('{video01_name}');
+    video01Player.on('play', function() {
+      console.log('Played the first video');
+    });
+
+    var video02Player = new Vimeo.Player('{video02_name}');
+    video02Player.on('play', function() {
+      console.log('Played the second video');
+    });
+  </script>
+</body>
+</html>

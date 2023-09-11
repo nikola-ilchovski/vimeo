@@ -1,0 +1,25 @@
+{
+  "name": "vimeo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node server.js",
+    "start:dev": "nodemon server.js",
+    "start:streams": "nodemon router/streams.js"
+  },
+  "dependencies": {
+    "axios": "^1.5.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "helmet": "^7.0.0",
+    "http2": "^3.3.7",
+    "http2-express-bridge": "^1.0.7",
+    "node-fetch": "^3.3.2",
+    "nodemon": "^3.0.1",
+    "spdy": "^4.0.2",
+    "tus-js-client": "^3.1.1",
+    "vimeo": "^2.3.1"
+  }
+}

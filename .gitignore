@@ -1,0 +1,6 @@
+.env
+node_modules
+test.crt
+test.key
+yarn.lock
+yarn-error.log
