@@ -8,9 +8,10 @@ const {
   wait,
   generateFilePath,
 } = require("../services/video");
-
-// Imports the Google Cloud client library
-const { Storage } = require("@google-cloud/storage");
+const {
+  uploadToGoogleStorage,
+  streamFileDownload,
+} = require("../services/google");
 
 // Import Node.js stream
 const stream = require("stream");
@@ -121,60 +122,24 @@ router.post("/stream-vimeo", async (req, res) => {
 router.post("/stream-google", async (req, res) => {
   console.log("/stream-google");
   try {
-    console.log("/STREAM");
-    const uploadLink = req.headers["upload-link"]; // vimeo video upload destination url
-    const uploadSize = Number(req.headers["upload-size"]); // the size of the video that will be uploaded
+    console.log("/STREAM Google");
+    // const uploadLink = req.headers["upload-link"]; // vimeo video upload destination url
+    // const uploadSize = Number(req.headers["upload-size"]); // the size of the video that will be uploaded
     const name = req.headers["upload-name"]; // the name of the video that will be uploaded
     const type = req.headers["upload-type"]; // the type (mp4) of the video that will be uploaded
 
-    /**
-     * TODO(developer): Uncomment the following lines before running the sample
-     */
-    // The ID of your GCS bucket
-    const bucketName = "opus-edu-dev";
-
-    // The new ID for your GCS file
-    const destFileName = generateFilePath("videos", "", name, true);
-
-    // Creates a client
-    const storage = new Storage({
-      projectId: process.env.GOOGLE_STORAGE_PROJECT_ID,
-      scopes: "https://www.googleapis.com/auth/cloud-platform",
-      credentials: {
-        client_email: process.env.GOOGLE_STORAGE_EMAIL,
-        private_key: process.env.GOOGLE_STORAGE_PRIVATE_KEY.replace(
-          /\\n/g,
-          "\n"
-        ),
-      },
-    });
-
-    // Get a reference to the bucket
-    const myBucket = storage.bucket(bucketName);
-
-    // Create a reference to a file object
-    const file = myBucket.file(destFileName);
-
-    async function streamFileUpload() {
-      // console.log("typeResponse", typeResponse);
-      req.pipe(file.createWriteStream()).on("finish", async () => {
-        // The file upload is complete
-        console.log("file upload is complete?");
-        file.setMetadata({
-          contentType: type,
-        });
-        res.send(true);
-      });
-
-      console.log(`${destFileName} uploaded to ${bucketName}`);
-    }
-
-    streamFileUpload().catch((error) => {
-      console.log("error: ", error);
-    });
+    const response = await uploadToGoogleStorage(req, name, type);
+    console.log("response", response);
+    res.send(response);
   } catch (error) {
     console.log("error happened", error);
   }
+});
+
+router.post("/approve", async (req, res) => {
+  console.log("approve route");
+  const stream = await streamFileDownload(req.body.videoPath);
+  console.log("stream", stream);
 });
 
 // api/video/status

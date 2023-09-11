@@ -124,3 +124,19 @@ export const upload = async (endpoint, fileInput) => {
     alert("Error uploading video", error);
   }
 };
+
+export const approveVideo = async (filePath) => {
+  console.log("filePath", filePath);
+  // videos/_videos_a64c94baaf368e1840a1324e839230de.mp4
+  const headers = new Headers();
+  headers.append("Content-Type", "application/json");
+  try {
+    const response = await fetch("https://localhost:8001/api/video/approve", {
+      method: "POST",
+      body: JSON.stringify({
+        videoPath: filePath,
+      }),
+      headers: headers,
+    });
+  } catch (error) {}
+};

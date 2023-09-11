@@ -85,24 +85,10 @@ const uploadChunk = async (uploadLink, chunk) => {
   return await uploadVideoChunkAsync(uploadLink, chunk);
 };
 
-const generateFilePath = (folder, extention, fileName, skip_extension) => {
-  if (!fileName) {
-    let string = new Date().getMilliseconds().toString();
-    fileName = crypto.createHash("md5").update(string).digest("hex");
-  }
-
-  if (typeof skip_extension != "undefined" && skip_extension) {
-    return folder + "/" + fileName;
-  }
-
-  return folder + "/" + fileName + "." + extention;
-};
-
 module.exports = {
   createVideo,
   getStatus,
   uploadChunk,
   uploadVideoChunkAsync,
   wait,
-  generateFilePath,
 };
