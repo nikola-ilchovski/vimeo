@@ -5,12 +5,11 @@ export const readFileAsBuffer = (file) =>
 
     // define listeners
     reader.onload = function (e) {
-      console.log("reading of file done: ", e.target.result);
       resolve(e.target.result);
     };
 
     reader.onprogress = function (e) {
-      console.log("e", Math.ceil((e.loaded / e.total) * 100));
+      // console.log("e", Math.ceil((e.loaded / e.total) * 100));
     };
 
     reader.onerror = function (e) {
@@ -43,8 +42,6 @@ export const checkVideoUploadStatus = async (uploadLink) => {
     },
     body: JSON.stringify({ uploadLink: uploadLink }),
   });
-
-  console.log("status", result);
 };
 
 export const createVideo = async (fileInput) => {
@@ -60,17 +57,26 @@ export const createVideo = async (fileInput) => {
   });
   const createVideoResponse = await result.json();
   const uploadLink = createVideoResponse.uploadLink;
+  const previewLink = createVideoResponse.response.player_embed_url;
 
   return {
     size,
     name,
     type,
     uploadLink,
+    previewLink,
   };
 };
 
-export const upload = async (endpoint, fileInput) => {
-  const { size, name, type, uploadLink } = await createVideo(fileInput);
+export const uploadToVimeo = async (
+  endpoint,
+  fileInput,
+  statusText,
+  destinationPath
+) => {
+  const { size, name, type, uploadLink, previewLink } = await createVideo(
+    fileInput
+  );
 
   const file = fileInput.files[0];
 
@@ -105,20 +111,119 @@ export const upload = async (endpoint, fileInput) => {
   headers.append("upload-link", uploadLink);
   headers.append("upload-size", size);
   headers.append("upload-name", name);
-  headers.append("upload-type", type);
+
+  let bytesUploaded = 0;
+
+  // Use a custom TransformStream to track upload progress
+  const progressTrackingStream = new TransformStream({
+    transform(chunk, controller) {
+      controller.enqueue(chunk);
+      bytesUploaded += chunk.byteLength;
+      if (statusText) {
+        statusText.innerHTML =
+          "Upload Status: " + Math.ceil((bytesUploaded / size) * 100) + "%";
+      }
+    },
+    flush(controller) {
+      // console.log("completed stream");
+    },
+  });
 
   try {
-    console.log("make request");
     const response = await fetch(endpoint, {
       method: "POST",
-      body: stream,
+      body: stream.pipeThrough(progressTrackingStream),
       headers: headers,
       duplex: "half",
     });
-    console.log("end request");
+
+    if (destinationPath && previewLink) {
+      destinationPath.innerHTML = "Preview Link: " + previewLink;
+    }
 
     if (response.ok) {
-      alert("Video uploaded successfully");
+      // console.log("Video uploaded successfully");
+    }
+  } catch (error) {
+    alert("Error uploading video", error);
+  }
+};
+
+export const uploadToGoogle = async (
+  endpoint,
+  fileInput,
+  statusText,
+  destinationPath
+) => {
+  const { name, size, type } = await getfile(fileInput);
+
+  const file = fileInput.files[0];
+
+  if (!file) {
+    alert("Please select a video file");
+    return;
+  }
+
+  const readStream = file.stream();
+  const stream = new ReadableStream({
+    start(controller) {
+      const reader = readStream.getReader();
+
+      function read() {
+        reader.read().then(({ done, value }) => {
+          if (done) {
+            controller.close();
+            return;
+          }
+
+          controller.enqueue(value);
+          read();
+        });
+      }
+
+      read();
+    },
+  });
+
+  const headers = new Headers();
+  headers.append("Content-Type", "application/octet-stream");
+  headers.append("upload-size", size);
+  headers.append("upload-name", name);
+  headers.append("upload-type", type);
+
+  let bytesUploaded = 0;
+
+  // Use a custom TransformStream to track upload progress
+  const progressTrackingStream = new TransformStream({
+    transform(chunk, controller) {
+      controller.enqueue(chunk);
+      bytesUploaded += chunk.byteLength;
+      if (statusText) {
+        statusText.innerHTML =
+          "Upload Status: " + Math.ceil((bytesUploaded / size) * 100) + "%";
+      }
+    },
+    flush(controller) {
+      // console.log("completed stream");
+    },
+  });
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      body: stream.pipeThrough(progressTrackingStream),
+      headers: headers,
+      duplex: "half",
+    });
+
+    const destinationPathText = (await response.json()).destination_path;
+
+    if (destinationPath && destinationPathText) {
+      destinationPath.innerHTML = "Destination Path: " + destinationPathText;
+    }
+
+    if (response.ok) {
+      // console.log("Video uploaded successfully");
     }
   } catch (error) {
     alert("Error uploading video", error);
@@ -126,8 +231,6 @@ export const upload = async (endpoint, fileInput) => {
 };
 
 export const approveVideo = async (filePath) => {
-  console.log("filePath", filePath);
-  // videos/_videos_a64c94baaf368e1840a1324e839230de.mp4
   const headers = new Headers();
   headers.append("Content-Type", "application/json");
   try {

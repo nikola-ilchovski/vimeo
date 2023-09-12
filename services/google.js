@@ -43,7 +43,6 @@ async function uploadToGoogleStorage(stream, name, type) {
 
       stream.pipe(file.createWriteStream()).on("finish", async () => {
         // The file upload is complete
-        console.log("file upload is complete?");
         await file.setMetadata({
           contentType: type,
         });

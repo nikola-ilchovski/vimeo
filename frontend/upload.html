@@ -15,17 +15,19 @@
 
   <input id="vimeo_upload" type="file" />
   <button class="upload-btn">Upload</button>
-  <p class="hidden" id="upload-status">Upload Status: <span id="upload-status-text"></span></p>
+  <span id="upload-status-text"></span>
+  <span id="destination-path-vimeo"></span>
 
   <h1>Upload (Flow Frontend -> Backend -> Google Cloud)</h1>
 
   <input id="upload_google" type="file" />
   <button class="upload-btn-google">Upload to Google Cloud</button>
-  <p class="hidden" id="upload-status">Upload Status: <span id="upload-status-text-google"></span></p>
+  <span id="upload-status-text-google"></span>
+  <span id="destination-path-google"></span>
 
   <h1>Upload (Transfer video from Google Clould -> Backend -> Vimeo)</h1>
   <button class="approve-video">Transfer</button>
-  <input type="text" id="approve-field-path">
+  <input type="text" id="approve-field-path" placeholder="gCloud video path">
 
   <!-- <script src="./tus.min.js"></script> -->
   <script type="module" src="./js/upload/main.js"></script>

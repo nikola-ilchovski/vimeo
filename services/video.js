@@ -67,7 +67,7 @@ const uploadVideoChunkAsync = (stream, chunkSize, totalSize, uploadLink) => {
         reject(error);
       },
       onProgress(bytesUploaded, total) {
-        console.log("onProgress: ", bytesUploaded, total);
+        // console.log("onProgress: ", bytesUploaded, total);
       },
       onSuccess: async function (data) {
         resolve(data);
@@ -75,7 +75,6 @@ const uploadVideoChunkAsync = (stream, chunkSize, totalSize, uploadLink) => {
     });
 
     // Start the upload
-    console.log("start the start");
     upload.start();
   });
 };

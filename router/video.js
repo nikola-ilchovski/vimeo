@@ -21,6 +21,7 @@ router.post("/create", async (req, res) => {
   console.log("/CREATE");
   try {
     const result = await createVideo(req.body);
+
     res.send(result);
   } catch (error) {
     console.log("error", error);
@@ -43,7 +44,7 @@ router.post("/stream-vimeo", async (req, res) => {
 
     req
       .on("data", async function (data) {
-        console.log(`Progress: ${(patchIndex / uploadSize) * 100}%`);
+        // console.log(`Progress: ${(patchIndex / uploadSize) * 100}%`);
         try {
           req.pause();
 
@@ -103,16 +104,25 @@ router.post("/stream-vimeo", async (req, res) => {
         req.resume();
       })
       .on("end", async function () {
-        console.log("readable stream is done");
         const end = new Date().getTime() / 1000;
         console.log("total time: ", end - start);
-        await wait(3000);
         const status = await getStatus(uploadLink);
-        console.log("status upload-offset", status.headers);
+        res.send({
+          completed:
+            status.headers.get("upload-offset")?.value ===
+            status.headers.get("upload-length")?.value,
+          destination_path: uploadLink,
+        });
       })
       .on("error", async function (error) {
         console.log("readable stream error: ", error);
         const status = await getStatus(uploadLink);
+        res.send({
+          completed:
+            status.headers.get("upload-offset")?.value ===
+            status.headers.get("upload-length")?.value,
+          destination_path: uploadLink,
+        });
       });
   } catch (error) {
     console.log("error happened");
@@ -120,7 +130,6 @@ router.post("/stream-vimeo", async (req, res) => {
 });
 
 router.post("/stream-google", async (req, res) => {
-  console.log("/stream-google");
   try {
     console.log("/STREAM Google");
     // const uploadLink = req.headers["upload-link"]; // vimeo video upload destination url
@@ -129,8 +138,7 @@ router.post("/stream-google", async (req, res) => {
     const type = req.headers["upload-type"]; // the type (mp4) of the video that will be uploaded
 
     const response = await uploadToGoogleStorage(req, name, type);
-    console.log("response", response);
-    res.send(response);
+    res.send({ destination_path: response });
   } catch (error) {
     console.log("error happened", error);
   }
