@@ -1,5 +1,5 @@
 // Imports the Google Cloud client library
-const { Storage } = require("@google-cloud/storage");
+const { Storage, TransferManager } = require("@google-cloud/storage");
 
 /**
  * TODO(developer): Uncomment the following lines before running the sample
@@ -24,15 +24,18 @@ async function streamFileDownload(filePath) {
   // The example below demonstrates how we can reference a remote file, then
   // pipe its contents to a local file.
   // Once the stream is created, the data can be piped anywhere (process, sdout, etc)
-  const stream = await storage
-    .bucket(bucketName)
-    .file(filePath)
-    .createReadStream(); //stream is created
+  const file = await storage.bucket(bucketName).file(filePath);
 
-  return stream;
+  const metadata = (await file.getMetadata())[0];
+
+  return {
+    name: metadata?.name,
+    size: Number(metadata?.size),
+    file: file,
+  };
 }
 
-async function uploadToGoogleStorage(stream, name, type) {
+async function uploadToGoogleStorage(stream, name, type, size) {
   return new Promise((resolve, reject) => {
     try {
       // The new ID for your GCS file
