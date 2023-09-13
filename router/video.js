@@ -13,9 +13,6 @@ const {
   streamFileDownload,
 } = require("../services/google");
 
-// Import Node.js stream
-const stream = require("stream");
-
 // /api/video/create
 router.post("/create", async (req, res) => {
   console.log("/CREATE");
@@ -146,110 +143,46 @@ router.post("/stream-google", async (req, res) => {
 
 router.post("/approve", async (req, res) => {
   console.log("/approve route");
+  // gCloud download stream
   const { size, name, file } = await streamFileDownload(req.body.videoPath);
+  const fileStream = file.createReadStream();
 
-  const stream = file.createReadStream();
   // create viemo video
   const create = await createVideo({
     size,
     name,
   });
-  // console.log("end create");
-
   const uploadLink = create.uploadLink;
   // Upload to vimeo
-  let patchIndex = 0; // tracking the progress of the upload in bytes (required for vimeo)
-  let cacheStorageAmount = 0; // tracking cached amount in bytes
-  const REQUIRED_BUFFER_AMOUNT = 1024 * 1024 * 4; // cached amount max amount in bytes
-  let bufferStorage = []; // caching the actual buffer data
-  let start = 0; // tracking request time execution
+  const start = new Date().getTime() / 1000; // tracking request time execution
 
-  stream
-    .on("data", async function (data) {
-      console.log(
-        `Progress: ${
-          (Math.ceil(patchIndex + cacheStorageAmount + data.length) / size) *
-          100
-        }%`
-      );
-      try {
-        stream.pause();
+  const response = await axios.patch(uploadLink, fileStream, {
+    headers: {
+      "Tus-Resumable": "1.0.0",
+      "Upload-Offset": 0,
+      "Content-Type": "application/offset+octet-stream",
+    },
+  });
 
-        // used only for tracking time
-        if (!start) {
-          start = new Date().getTime() / 1000;
-        }
+  const end = new Date().getTime() / 1000;
+  console.log("total time: ", end - start);
 
-        // Important: always make sure you compare numbers vs numbers
-        if (size === data.length + patchIndex + cacheStorageAmount) {
-          bufferStorage.push(data);
-          cacheStorageAmount = cacheStorageAmount + data.length;
+  const status = await getStatus(uploadLink);
+  const headers = Object.fromEntries(status.headers);
+  const completed = headers["upload-offset"] === headers["upload-length"];
 
-          const toSendChunk = Buffer.concat(bufferStorage);
-          // send request
-          const response = await axios.patch(uploadLink, toSendChunk, {
-            headers: {
-              "Tus-Resumable": "1.0.0",
-              "Upload-Offset": patchIndex,
-              "Content-Type": "application/offset+octet-stream",
-            },
-          });
+  if (completed) {
+    const deleteGCloudResponse = await file.delete();
+  }
 
-          patchIndex = patchIndex + toSendChunk.length;
-
-          bufferStorage = [];
-          cacheStorageAmount = 0;
-        } else {
-          if (cacheStorageAmount >= REQUIRED_BUFFER_AMOUNT) {
-            // send request
-            bufferStorage.push(data);
-            const toSendChunk = Buffer.concat(bufferStorage);
-
-            const response = await axios.patch(uploadLink, toSendChunk, {
-              headers: {
-                "Tus-Resumable": "1.0.0",
-                "Upload-Offset": patchIndex,
-                "Content-Type": "application/offset+octet-stream",
-              },
-            });
-
-            patchIndex = patchIndex + toSendChunk.length;
-
-            // reset cache
-            bufferStorage = [];
-            cacheStorageAmount = 0;
-          } else {
-            // skip send request + increment cache
-            bufferStorage.push(data);
-            cacheStorageAmount = cacheStorageAmount + data.length;
-          }
-        }
-      } catch (error) {
-        console.log("on data error");
-      }
-
-      stream.resume();
-    })
-    .on("end", async function () {
-      const end = new Date().getTime() / 1000;
-      console.log("total time: ", end - start);
-
-      const status = await getStatus(uploadLink);
-      const headers = Object.fromEntries(status.headers);
-      const completed = headers["upload-offset"] === headers["upload-length"];
-
-      if (completed) {
-        const deleteGCloudResponse = await file.delete();
-      }
-
-      res.send({
-        completed,
-        destination_path: uploadLink,
-      });
-    })
-    .on("error", async function (error) {
-      res.send(error);
-    });
+  res.send({
+    completed,
+    progress: Math.ceil(
+      (Number(headers["upload-length"]) / Number(headers["upload-offset"])) *
+        100
+    ),
+    destination_path: uploadLink,
+  });
 });
 
 // api/video/status
