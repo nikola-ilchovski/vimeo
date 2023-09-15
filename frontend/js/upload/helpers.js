@@ -213,6 +213,7 @@ export const uploadToGoogle = async (
       method: "POST",
       body: stream.pipeThrough(progressTrackingStream),
       headers: headers,
+      // allowHTTP1ForStreamingUpload: true,
       duplex: "half",
     });
 
@@ -226,7 +227,7 @@ export const uploadToGoogle = async (
       // console.log("Video uploaded successfully");
     }
   } catch (error) {
-    alert("Error uploading video", error);
+    console.log("error", error);
   }
 };
 
@@ -234,10 +235,10 @@ export const approveVideo = async (filePath) => {
   const headers = new Headers();
   headers.append("Content-Type", "application/json");
   try {
-    const response = await fetch("https://localhost:8001/api/video/approve", {
+    const response = await fetch("https://localhost:3001/video/approve", {
       method: "POST",
       body: JSON.stringify({
-        videoPath: filePath,
+        path: filePath,
       }),
       headers: headers,
     });

@@ -27,7 +27,7 @@ const destinationPathGoogle = document.querySelector(
 
 googleBtn.addEventListener("click", async function () {
   await uploadToGoogle(
-    "https://localhost:8001/api/video/stream-google",
+    "https://localhost:3001/video/upload",
     fileInputGoogle,
     googleUploadStatus,
     destinationPathGoogle
