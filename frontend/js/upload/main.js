@@ -41,6 +41,6 @@ const approveBtn = document.querySelector(".approve-video");
 const approveField = document.querySelector("#approve-field-path");
 
 approveBtn.addEventListener("click", async function () {
-  await approveVideo(approveField.value);
+  await approveVideo(approveField.value, "Chill Music Video");
 });
 /* ---------- END: Approve video -> transfer from gCloud to Vimeo ---------- */

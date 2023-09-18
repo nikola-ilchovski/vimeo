@@ -217,7 +217,7 @@ export const uploadToGoogle = async (
       duplex: "half",
     });
 
-    const destinationPathText = (await response.json()).destination_path;
+    const destinationPathText = (await response.json()).destination_link;
 
     if (destinationPath && destinationPathText) {
       destinationPath.innerHTML = "Destination Path: " + destinationPathText;
@@ -231,7 +231,7 @@ export const uploadToGoogle = async (
   }
 };
 
-export const approveVideo = async (filePath) => {
+export const approveVideo = async (filePath, name) => {
   const headers = new Headers();
   headers.append("Content-Type", "application/json");
   try {
@@ -239,6 +239,7 @@ export const approveVideo = async (filePath) => {
       method: "POST",
       body: JSON.stringify({
         path: filePath,
+        name: name,
       }),
       headers: headers,
     });
