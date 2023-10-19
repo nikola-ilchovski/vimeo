@@ -26,8 +26,11 @@ const destinationPathGoogle = document.querySelector(
 );
 
 googleBtn.addEventListener("click", async function () {
+  // const video_id = '652681171c49e61be162d353';
+  const course_id = '652698fb90e718875c98cfca';
+  const video_id = '652698fb90e718875c98cfca';
   await uploadToGoogle(
-    "https://localhost:3001/video/upload",
+    `https://localhost:3011/course/${course_id}/video/${video_id}/upload`,
     fileInputGoogle,
     googleUploadStatus,
     destinationPathGoogle

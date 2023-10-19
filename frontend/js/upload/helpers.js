@@ -188,8 +188,9 @@ export const uploadToGoogle = async (
   const headers = new Headers();
   headers.append("Content-Type", "application/octet-stream");
   headers.append("upload-size", size);
-  headers.append("upload-name", name);
+  headers.append("video-title", name);
   headers.append("upload-type", type);
+  headers.append("Authorization", "Bearer x");
 
   let bytesUploaded = 0;
 
