@@ -25,6 +25,7 @@ const destinationPathGoogle = document.querySelector(
   "#destination-path-google"
 );
 
+// todo Bogi
 googleBtn.addEventListener("click", async function () {
   // const video_id = '652681171c49e61be162d353';
   const course_id = '652698fb90e718875c98cfca';
